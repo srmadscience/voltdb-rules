@@ -136,4 +136,22 @@ public static final SQLStmt getRules = new SQLStmt(RuleSet.GET_RULE_SET);
 theNumericValues.put("actualBusynessPercentage", (double) (actualBusyInCallPct + actualBusyOutCallPct));  
 ````
 
+* Call the RuleSet. It returns null if no rule tripped, or the name of the stack.
 
+````
+           try {
+                String ruleTripped = rs.evaluate(theNumericValues, theStringValues);
+                
+                if (ruleTripped != null) {
+                    System.out.println(ruleTripped);
+                    voltQueueSQL(flagDevice, ruleTripped, 42,
+                            deviceId);
+                } else {
+                    voltQueueSQL(clearDevice, deviceId);
+                }
+                
+            } catch (BadRuleException e) {
+                System.out.println(rs.toString() + " " + e.getMessage());
+                throw new VoltAbortException("BadRuleException:"+e.getMessage());
+            }
+````
