@@ -123,6 +123,17 @@ public static final SQLStmt getRules = new SQLStmt(RuleSet.GET_RULE_SET);
         }
 ````        
     
-    
+ * As part of the procedure create the HashMap's needed to use the RuleSet:
+ 
+````
+       HashMap<String, Double> theNumericValues = new  HashMap<String, Double>();
+       HashMap<String, String> theStringValues = new HashMap<String, String>();
+````
+ 
+*  Add numeric or text values to the HashMap
+
+````
+theNumericValues.put("actualBusynessPercentage", (double) (actualBusyInCallPct + actualBusyOutCallPct));  
+````
 
 
