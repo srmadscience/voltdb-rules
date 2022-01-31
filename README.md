@@ -87,3 +87,42 @@ VALUES
 
 
 ````
+
+
+# Using voltdb-rules
+
+* Import the classes
+
+````
+load classes voltdb-rules.jar;
+````
+
+* Create a RuleSet variable in your procedure
+
+````
+RuleSet rs = null;
+````
+
+* Create a SQL statement to read the rules
+
+Note that RuleSet has a static method that gives you the correct SQL:
+
+````
+public static final SQLStmt getRules = new SQLStmt(RuleSet.GET_RULE_SET);
+````
+
+* Create the RuleSet object if it is null or stale. Note that you *must* use getTransactionTime() to get the time.
+
+````
+        if (rs == null || rs.expired(getTransactionTime())) {
+            try {
+                rs = createRuleSet("SIMBOX");
+            } catch (BadRuleException e) {
+                throw new VoltAbortException("BadRuleException:"+e.getMessage());
+            }
+        }
+````        
+    
+    
+
+
