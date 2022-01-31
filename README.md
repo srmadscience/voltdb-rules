@@ -58,6 +58,32 @@ One one of the three THRESHOLD fields can be populated.
 * THRESHOLD_FIELD contains a text  string if we are matching strings, for example 'COLOR = RED'
 * THRESHOLD_EXPRESSION contains the name of <i>another</i> entry in the hashmap we are comparing to, for example 'shoesize > max_shoesize_stocked'
 
-
-
 Within a RULESET rules are ordered by SEQNO.
+
+An example of DML to create two stacks would be:
+
+````
+INSERT INTO volt_rules
+VALUES
+('SIMBOX',32,1,'suspicious_device_has_no_incoming_calls', 'incomingCallCount','=',0,null,null);
+
+INSERT INTO volt_rules
+VALUES
+('SIMBOX',33,1,'suspicious_device_has_no_incoming_calls', 'outgoingCallCount','>',0,null,null);
+
+
+INSERT INTO volt_rules
+VALUES
+('SIMBOX',41,1,'suspiciously_moving_device', 'thisDeviceIsSuspicious','=',1,null,null);
+
+
+INSERT INTO volt_rules
+VALUES
+('SIMBOX',51,1,'total_incoming_outgoing_ratio_bad', 'actualBusynessPercentage','>=',null,null,'busynessPercentage');
+
+INSERT INTO volt_rules
+VALUES
+('SIMBOX',52,1,'total_incoming_outgoing_ratio_bad', 'outgoingIncomingRatioTrip','<',null,null,'outgoingCallCount');
+
+
+````
