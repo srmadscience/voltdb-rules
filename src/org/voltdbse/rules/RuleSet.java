@@ -87,11 +87,11 @@ public class RuleSet {
                 String thresholdString = ruleTable.getString("THRESHOLD_STRING");
                 String thresholdExpression = ruleTable.getString("THRESHOLD_EXPRESSION");
 
-                Rule r = new Rule(seqno, ruleField, operator, thresholdDouble, thresholdString,thresholdExpression);
+                Rule r = new Rule(seqno, ruleField, operator, thresholdDouble, thresholdString, thresholdExpression);
 
                 if (tempStack == null) {
                     tempStack = new RuleStack(isAnd, stackName);
-                } else if (! tempStack.getStackName().equalsIgnoreCase(stackName)) {
+                } else if (!tempStack.getStackName().equalsIgnoreCase(stackName)) {
                     theRuleStack.add(tempStack);
                     tempStack = new RuleStack(isAnd, stackName);
                 }
@@ -108,14 +108,26 @@ public class RuleSet {
         }
     }
 
-    public String evaluate(HashMap<String, Double> theNumericValues,HashMap<String, String> theStringValues) throws BadRuleException {
+    /**
+     * See if a current situation trips any rules.
+     * 
+     * @param theNumericValues HashMap<String, Double> of numeric parameters.
+     * @param theStringValues  HashMap<String, String> of string parameters.
+     * @return null, or a String with name of the stack that triggered the rule.
+     * @throws BadRuleException - if the rule refers to a parameter that doesn't
+     *                          exist.
+     */
+    public String evaluate(HashMap<String, Double> theNumericValues, HashMap<String, String> theStringValues)
+            throws BadRuleException {
+
+        lastTriggeredStackId = -1;
 
         for (int i = 0; i < theRuleStack.size(); i++) {
 
-            String result = theRuleStack.get(i).evaluate(theNumericValues,theStringValues);
+            String result = theRuleStack.get(i).evaluate(theNumericValues, theStringValues);
             if (result != null) {
-                lastTriggeredStackId  = i;
-                return theRuleStack.get(i).getStackName();
+                lastTriggeredStackId = i;
+                return result;
             }
         }
 
@@ -138,27 +150,43 @@ public class RuleSet {
         return builder.toString();
     }
 
+    /**
+     * See if RuleSet has expired
+     * 
+     * @param logicalDate current date, as defined by Value of
+     *                    VoltProcedure.getTransactionTime(). NEVER USE System
+     *                    time...
+     * @return true if logicalDate < date RuleSet was created with
+     */
     public boolean expired(Date logicalDate) {
 
-        if (logicalDate.compareTo(expiryDate) < 0) {
-            // TODO test
+        if (logicalDate.compareTo(expiryDate) > 0) {
             return true;
         }
 
         return false;
     }
 
-    
+    /**
+     * @return toString of last rule stack triggered. -1 means no rule triggered.
+     */
     public String getLastTriggeredStackDetail() {
-        
+
         if (lastTriggeredStackId > -1) {
-            
-            return(theRuleStack.get(lastTriggeredStackId).toString());
+
+            return (theRuleStack.get(lastTriggeredStackId).toString());
         }
-        
+
         return null;
-        
+
     }
+
+    /**
+     * Create a VoltTable for testing
+     * 
+     * @return An empty VoltTable in the form RuleSet uses. Identical to output from
+     *         GET_ALL_RULES
+     */
     public static VoltTable getEmptyRuleTable() {
 
         VoltTable t = new VoltTable(new VoltTable.ColumnInfo("RULESET_NAME", VoltType.STRING),
@@ -174,8 +202,24 @@ public class RuleSet {
         return t;
     }
 
+    /**
+     * 
+     * Add a rule to a VoltTable used for testing
+     * 
+     * @param t
+     * @param ruleSetName
+     * @param isAnd
+     * @param stackName
+     * @param seqno
+     * @param ruleField
+     * @param ruleOperator
+     * @param thresholdFloat
+     * @param thresholdString
+     * @param thresholdExpression
+     */
     public static void addRule(VoltTable t, String ruleSetName, boolean isAnd, String stackName, long seqno,
-            String ruleField, String ruleOperator, Double thresholdFloat, String thresholdString, String thresholdExpression ) {
+            String ruleField, String ruleOperator, Double thresholdFloat, String thresholdString,
+            String thresholdExpression) {
 
         short isAndShort = 0;
 
@@ -183,6 +227,7 @@ public class RuleSet {
             isAndShort = 1;
         }
 
-        t.addRow(ruleSetName, isAndShort, stackName, seqno, ruleField, ruleOperator, thresholdFloat,thresholdString,thresholdExpression);
+        t.addRow(ruleSetName, isAndShort, stackName, seqno, ruleField, ruleOperator, thresholdFloat, thresholdString,
+                thresholdExpression);
     }
 }

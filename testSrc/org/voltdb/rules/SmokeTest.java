@@ -43,11 +43,12 @@ public class SmokeTest {
             theNumericValues.put("IQ", (double) 2);
             theStringValues.put("COLOR", "PINK");
            
-                       
+            testSet.expired(new Date());
             
             String result = testSet.evaluate(theNumericValues,theStringValues);
             
             System.out.println(theNumericValues + " " + theStringValues + " " + result);
+            System.out.println(testSet.getLastTriggeredStackDetail());
             
             
             
