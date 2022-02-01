@@ -4,9 +4,8 @@ import java.util.Date;
 import java.util.HashMap;
 
 import org.voltdb.VoltTable;
-
-import rules.BadRuleException;
-import rules.RuleSet;
+import org.voltdbse.rules.BadRuleException;
+import org.voltdbse.rules.RuleSet;
 
 
 public class SmokeTest {

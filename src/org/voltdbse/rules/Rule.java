@@ -1,4 +1,4 @@
-package rules;
+package org.voltdbse.rules;
 
 import java.util.HashMap;
 

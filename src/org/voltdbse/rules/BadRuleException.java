@@ -1,4 +1,4 @@
-package rules;
+package org.voltdbse.rules;
 
 @SuppressWarnings("serial")
 public class BadRuleException extends Exception {
