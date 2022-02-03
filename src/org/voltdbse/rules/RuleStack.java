@@ -97,6 +97,31 @@ public class RuleStack {
         builder.append("]");
         return builder.toString();
     }
+    
+    /**
+     * Convenience method to create SQL during development.
+     * 
+     * @param builder
+     * @param stackName
+     * @param andOrOr
+     */
+    public void toSQL(StringBuilder builder, String ruleSetName) {
+        
+        int andOrOr = 0;
+
+        if (isAnd) {
+            andOrOr = 1;
+        }
+
+        for (int i = 0; i < theRules.size(); i++) {
+            
+            theRules.get(i).toSQL(builder, ruleSetName, stackName, andOrOr);
+            
+        }
+
+       
+    }
+    
 
     /**
      * @return the stackName

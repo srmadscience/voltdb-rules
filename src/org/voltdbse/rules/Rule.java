@@ -277,4 +277,104 @@ public class Rule {
         return builder.toString();
     }
 
+    /**
+     * Convenience method to create SQL during development.
+     * 
+     * @param builder
+     * @param stackName
+     * @param andOrOr
+     */
+    public void toSQL(StringBuilder builder, String ruleSetName, String stackName, int andOrOr) {
+       
+        builder.append("INSERT INTO volt_rules");
+        builder.append(System.lineSeparator());
+        builder.append("(RULESET_NAME,STACK_NAME,SEQNO,ISAND,RULE_FIELD,RULE_OPERATOR,THRESHOLD_FLOAT,THRESHOLD_STRING,THRESHOLD_EXPRESSION)");
+        builder.append(System.lineSeparator());
+        builder.append("VALUES");
+        builder.append(System.lineSeparator());
+        
+        builder.append("('");
+        builder.append(ruleSetName);
+        builder.append("','");
+        builder.append(stackName);
+        builder.append("',");
+        builder.append(seqno);
+        builder.append(",");
+        builder.append(andOrOr);
+        builder.append(",'");
+        builder.append(ruleField);
+        builder.append("','");
+        
+        switch (operator) {
+
+        case EQUALS:
+
+            builder.append("=");
+            break;
+
+        case LESS_THAN:
+
+            builder.append("<");
+            break;
+
+        case LESS_THAN_EQUAL:
+
+            builder.append("<=");
+            break;
+
+        case GREATER_THAN_EQUAL:
+
+            builder.append(">=");
+            break;
+
+        case GREATER_THAN:
+
+            builder.append(">");
+            break;
+
+        case NOT_EQUALS:
+
+            builder.append("!=");
+            break;
+
+        }
+        
+       
+        
+        builder.append("',");
+        
+        if (thresholdDouble != null) {
+            builder.append(thresholdDouble);
+            builder.append("'");
+            builder.append("'");
+        } else {
+            builder.append("null,");
+        }
+
+        if (thresholdString != null) {
+
+            builder.append("'");
+            builder.append(thresholdString);
+            builder.append("',");
+        }else {
+            builder.append("null,");
+        }
+ 
+        
+        if (thresholdExpression != null) {
+
+            builder.append("'");
+            builder.append(thresholdExpression);
+            builder.append("');");
+        }else {
+            builder.append("null);");
+        }
+
+        builder.append(System.lineSeparator());
+        builder.append(System.lineSeparator());
+        
+        //('SIMBOX',41,1,'suspiciously_moving_device', 'thisDeviceIsSuspicious','=',1,null,null)
+        
+    }
+
 }

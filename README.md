@@ -121,8 +121,10 @@ public static final SQLStmt getRules = new SQLStmt(RuleSet.GET_RULE_SET);
                 throw new VoltAbortException("BadRuleException:"+e.getMessage());
             }
         }
-````        
-    
+        
+````
+
+
  * As part of the procedure create the HashMap's needed to use the RuleSet:
  
 ````

@@ -104,8 +104,10 @@ public class RuleSet {
                 throw new BadRuleException("No rules found for '" + name + "'");
             }
 
-            theRuleStack.add(tempStack);
+            
         }
+        
+        theRuleStack.add(tempStack);
     }
 
     /**
@@ -179,6 +181,25 @@ public class RuleSet {
 
         return null;
 
+    }
+
+    /**
+     * 
+     * Convenience method to return this RuleSet as SQL
+     * 
+     * @return this RuleSet as SQL
+     */
+    public String toSQL() {
+        
+        StringBuilder b = new StringBuilder();
+
+        for (int i = 0; i < theRuleStack.size(); i++) {
+
+            theRuleStack.get(i).toSQL(b,name);
+
+        }
+
+        return b.toString();
     }
 
     /**

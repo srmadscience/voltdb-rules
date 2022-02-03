@@ -45,6 +45,8 @@ public class SmokeTest {
            
             testSet.expired(new Date());
             
+            System.out.println(testSet.toSQL());
+            
             String result = testSet.evaluate(theNumericValues,theStringValues);
             
             System.out.println(theNumericValues + " " + theStringValues + " " + result);
