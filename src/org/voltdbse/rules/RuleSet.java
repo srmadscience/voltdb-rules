@@ -119,13 +119,11 @@ public class RuleSet {
 
             }
 
- 
         }
-        
+
         if (tempStack == null) {
             throw new BadRuleException("No rules found for '" + name + "'");
         }
-
 
         theRuleStack.add(tempStack);
     }
@@ -267,14 +265,14 @@ public class RuleSet {
     }
 
     public int getRuleCount() {
-        
+
         int ruleCount = 0;
-        
-        for (int i = 0; i < theRuleStack.size(); i++) {
-            ruleCount  += theRuleStack.get(i).getRuleCount();
-          }
+
+        for (RuleStack element : theRuleStack) {
+            ruleCount += element.getRuleCount();
+        }
 
         return ruleCount;
-        
+
     }
 }

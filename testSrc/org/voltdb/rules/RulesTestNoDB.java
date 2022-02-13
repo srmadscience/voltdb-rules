@@ -1,6 +1,6 @@
 package org.voltdb.rules;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -318,6 +318,51 @@ class RulesTestNoDB {
             theStringValues.put("SHOESIZE", "C");
 
             result = testSet.evaluate(theNumericValues, theStringValues);
+
+            if (result == null) {
+                fail("== failed");
+            }
+
+        } catch (BadRuleException e) {
+            fail(e.getMessage());
+        }
+
+    }
+
+    @Test
+    void testStringEqualsManyString() {
+
+        VoltTable t = RuleSet.getEmptyRuleTable();
+        long seqno = 0;
+        long stackId = 0;
+        int compareCount = 1000000;
+
+        long startMs = System.currentTimeMillis();
+
+        for (int i = 0; i < compareCount; i++) {
+            RuleSet.addRule(t, "TEST", RuleStack.AND, "RuleStack" + stackId++, seqno++, "SHOESIZE", "=", null, "A" + i,
+                    null);
+        }
+        System.out.println(compareCount + " new rules " + (System.currentTimeMillis() - startMs) + "ms");
+
+        RuleSet.addRule(t, "TEST", RuleStack.AND, "RuleStack" + stackId++, seqno++, "SHOESIZE", "=", null, "A123X",
+                null);
+
+        try {
+            startMs = System.currentTimeMillis();
+            RuleSet testSet = new RuleSet("TEST", t, new Date(System.currentTimeMillis() + 60000));
+            System.out.println("constructor took " + (System.currentTimeMillis() - startMs) + "ms");
+
+            String toString = testSet.toString();
+            String toSql = testSet.toSQL();
+            HashMap<String, Double> theNumericValues = new HashMap<>();
+            HashMap<String, String> theStringValues = new HashMap<>();
+
+            theStringValues.put("SHOESIZE", "A123X");
+
+            startMs = System.currentTimeMillis();
+            String result = testSet.evaluate(theNumericValues, theStringValues);
+            System.out.println(compareCount + " comparisons took " + (System.currentTimeMillis() - startMs) + "ms");
 
             if (result == null) {
                 fail("== failed");
@@ -962,7 +1007,7 @@ class RulesTestNoDB {
         }
 
     }
-    
+
     @Test
     void testBadOperator() {
 
@@ -975,7 +1020,6 @@ class RulesTestNoDB {
         try {
             RuleSet testSet = new RuleSet("TEST", t, new Date(System.currentTimeMillis() + 60000));
 
-           
             fail("Should throw error");
 
         } catch (BadRuleException e) {
@@ -983,6 +1027,7 @@ class RulesTestNoDB {
         }
 
     }
+
     @Test
     void testBadCombo() {
 
@@ -990,12 +1035,12 @@ class RulesTestNoDB {
         long seqno = 0;
         long stackId = 0;
 
-        RuleSet.addRule(t, "TEST", RuleStack.AND + "XXX", "RuleStack" + stackId++, seqno++, "SHOESIZE", "=", null, null, "IQ");
+        RuleSet.addRule(t, "TEST", RuleStack.AND + "XXX", "RuleStack" + stackId++, seqno++, "SHOESIZE", "=", null, null,
+                "IQ");
 
         try {
             RuleSet testSet = new RuleSet("TEST", t, new Date(System.currentTimeMillis() + 60000));
 
-           
             fail("Should throw error");
 
         } catch (BadRuleException e) {

@@ -153,7 +153,7 @@ public class RuleStack {
     }
 
     public int getRuleCount() {
-       
+
         return theRules.size();
     }
 
