@@ -1,3 +1,26 @@
+/* This file is part of VoltDB.
+ * Copyright (C) 2008-2022 VoltDB Inc.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+ * IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+ * OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ * OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 package org.voltdbse.rules;
 
 import java.util.HashMap;
@@ -5,8 +28,6 @@ import java.util.HashMap;
 import org.voltdb.VoltType;
 
 public class Rule {
-
-    private static final String NO_VALUE_FOUND = "No Value Found";
 
     long seqno;
     String ruleField;
@@ -16,9 +37,9 @@ public class Rule {
     String thresholdExpression;
 
     /**
-     * 
+     *
      * Create a new rule
-     * 
+     *
      * @param seqno
      * @param ruleField
      * @param operator
@@ -68,7 +89,7 @@ public class Rule {
 
     /**
      * Evaluate a rule.
-     * 
+     *
      * @param theNumericValues
      * @param theStringValues
      * @return toString() of rule if tripped, otherwise null
@@ -91,14 +112,14 @@ public class Rule {
 
     /**
      * See if this rule is tripped
-     * 
+     *
      * @param theNumericValues
      * @return toString() if rule mapped
      * @throws BadRuleException
      */
     private String evaluateNumbers(HashMap<String, Double> theNumericValues) throws BadRuleException {
 
-        Double ourValue = theNumericValues.getOrDefault(ruleField, Double.MIN_VALUE);
+        Double ourValue = theNumericValues.get(ruleField);
         Double actualThreshold = thresholdDouble;
 
         // If using expressions use value referenced by expression...
@@ -112,9 +133,9 @@ public class Rule {
 
         }
 
-        // Always return false for null
-        if (ourValue == Double.MIN_VALUE) {
-            return NO_VALUE_FOUND;
+        // Always throw error for null
+        if (ourValue == null) {
+            throw new BadRuleException("No value for rulefield:'" + ruleField + "'");
         }
 
         switch (operator) {
@@ -175,24 +196,24 @@ public class Rule {
 
     /**
      * See if this rule is tripped
-     * 
+     *
      * @param theStringValues
      * @return toString() if rule mapped
      * @throws BadRuleException
      */
     private String evaluateStrings(HashMap<String, String> theStringValues) throws BadRuleException {
 
-        String ourValue = theStringValues.getOrDefault(ruleField, NO_VALUE_FOUND);
+        String ourValue = theStringValues.get(ruleField);
 
-        // Always return false for null
-        if (ourValue.equals(NO_VALUE_FOUND)) {
-            return NO_VALUE_FOUND;
+        // Always throw error
+        if (ourValue == null) {
+            throw new BadRuleException("No value for rulefield:'" + ruleField + "'");
         }
 
         // If using expressions use value referenced by expression...
-        String actualThreshold = new String(thresholdString);
+        String actualThreshold;
 
-        if (thresholdExpression != null) {
+        if (thresholdString == null) {
 
             actualThreshold = theStringValues.get(thresholdExpression);
 
@@ -200,6 +221,8 @@ public class Rule {
                 throw new BadRuleException("Invalid Expression:'" + thresholdExpression + "'");
             }
 
+        } else {
+            actualThreshold = new String(thresholdString);
         }
 
         switch (operator) {
@@ -279,20 +302,21 @@ public class Rule {
 
     /**
      * Convenience method to create SQL during development.
-     * 
+     *
      * @param builder
      * @param stackName
      * @param andOrOr
      */
-    public void toSQL(StringBuilder builder, String ruleSetName, String stackName, int andOrOr) {
-       
+    public void toSQL(StringBuilder builder, String ruleSetName, String stackName, String andOrOr) {
+
         builder.append("INSERT INTO volt_rules");
         builder.append(System.lineSeparator());
-        builder.append("(RULESET_NAME,STACK_NAME,SEQNO,ISAND,RULE_FIELD,RULE_OPERATOR,THRESHOLD_FLOAT,THRESHOLD_STRING,THRESHOLD_EXPRESSION)");
+        builder.append(
+                "(RULESET_NAME,STACK_NAME,SEQNO,ISAND,RULE_FIELD,RULE_OPERATOR,THRESHOLD_FLOAT,THRESHOLD_STRING,THRESHOLD_EXPRESSION)");
         builder.append(System.lineSeparator());
         builder.append("VALUES");
         builder.append(System.lineSeparator());
-        
+
         builder.append("('");
         builder.append(ruleSetName);
         builder.append("','");
@@ -304,7 +328,7 @@ public class Rule {
         builder.append(",'");
         builder.append(ruleField);
         builder.append("','");
-        
+
         switch (operator) {
 
         case EQUALS:
@@ -338,11 +362,9 @@ public class Rule {
             break;
 
         }
-        
-       
-        
+
         builder.append("',");
-        
+
         if (thresholdDouble != null) {
             builder.append(thresholdDouble);
             builder.append("'");
@@ -356,25 +378,22 @@ public class Rule {
             builder.append("'");
             builder.append(thresholdString);
             builder.append("',");
-        }else {
+        } else {
             builder.append("null,");
         }
- 
-        
+
         if (thresholdExpression != null) {
 
             builder.append("'");
             builder.append(thresholdExpression);
             builder.append("');");
-        }else {
+        } else {
             builder.append("null);");
         }
 
         builder.append(System.lineSeparator());
         builder.append(System.lineSeparator());
-        
-        //('SIMBOX',41,1,'suspiciously_moving_device', 'thisDeviceIsSuspicious','=',1,null,null)
-        
+
     }
 
 }

@@ -1,3 +1,26 @@
+/* This file is part of VoltDB.
+ * Copyright (C) 2008-2022 VoltDB Inc.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+ * IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+ * OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ * OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 package org.voltdbse.rules;
 
 import java.util.ArrayList;
@@ -6,7 +29,6 @@ import java.util.HashMap;
 
 import org.voltdb.VoltTable;
 import org.voltdb.VoltType;
-import org.voltdb.types.TimestampType;
 
 public class RuleSet {
 
@@ -25,7 +47,7 @@ public class RuleSet {
             + "FROM volt_rules WHERE RULESET_NAME = ? ORDER BY RULESET_NAME, SEQNO;";
 
     protected String name = null;
-    protected ArrayList<RuleStack> theRuleStack = new ArrayList<RuleStack>();
+    protected ArrayList<RuleStack> theRuleStack = new ArrayList<>();
     protected Date expiryDate = null;
 
     private int lastTriggeredStackId = -1;
@@ -51,14 +73,9 @@ public class RuleSet {
 
             String ruleSetName = ruleTable.getString("RULESET_NAME");
 
-            if (ruleSetName.equalsIgnoreCase(name)) {
+            if (ruleSetName.equals(name)) {
 
-                // Stack
-                boolean isAnd = true;
-
-                if (ruleTable.getLong("ISAND") == 0) {
-                    isAnd = false;
-                }
+                String isAnd = ruleTable.getString("ISAND");
 
                 String stackName = ruleTable.getString("STACK_NAME");
 
@@ -71,6 +88,8 @@ public class RuleSet {
 
                 if (operatorAsString.equals("=")) {
                     operator = RuleOperator.EQUALS;
+                } else if (operatorAsString.equals("!=")) {
+                    operator = RuleOperator.NOT_EQUALS;
                 } else if (operatorAsString.equals("<=")) {
                     operator = RuleOperator.LESS_THAN_EQUAL;
                 } else if (operatorAsString.equals("<")) {
@@ -100,19 +119,20 @@ public class RuleSet {
 
             }
 
-            if (tempStack == null) {
-                throw new BadRuleException("No rules found for '" + name + "'");
-            }
-
-            
+ 
         }
         
+        if (tempStack == null) {
+            throw new BadRuleException("No rules found for '" + name + "'");
+        }
+
+
         theRuleStack.add(tempStack);
     }
 
     /**
      * See if a current situation trips any rules.
-     * 
+     *
      * @param theNumericValues HashMap<String, Double> of numeric parameters.
      * @param theStringValues  HashMap<String, String> of string parameters.
      * @return null, or a String with name of the stack that triggered the rule.
@@ -143,8 +163,8 @@ public class RuleSet {
         builder.append(name);
         builder.append(", theRuleStack=");
 
-        for (int i = 0; i < theRuleStack.size(); i++) {
-            builder.append(theRuleStack.get(i).toString());
+        for (RuleStack element : theRuleStack) {
+            builder.append(element.toString());
             builder.append(",");
         }
 
@@ -154,7 +174,7 @@ public class RuleSet {
 
     /**
      * See if RuleSet has expired
-     * 
+     *
      * @param logicalDate current date, as defined by Value of
      *                    VoltProcedure.getTransactionTime(). NEVER USE System
      *                    time...
@@ -184,18 +204,18 @@ public class RuleSet {
     }
 
     /**
-     * 
+     *
      * Convenience method to return this RuleSet as SQL
-     * 
+     *
      * @return this RuleSet as SQL
      */
     public String toSQL() {
-        
+
         StringBuilder b = new StringBuilder();
 
-        for (int i = 0; i < theRuleStack.size(); i++) {
+        for (RuleStack element : theRuleStack) {
 
-            theRuleStack.get(i).toSQL(b,name);
+            element.toSQL(b, name);
 
         }
 
@@ -204,14 +224,14 @@ public class RuleSet {
 
     /**
      * Create a VoltTable for testing
-     * 
+     *
      * @return An empty VoltTable in the form RuleSet uses. Identical to output from
      *         GET_ALL_RULES
      */
     public static VoltTable getEmptyRuleTable() {
 
         VoltTable t = new VoltTable(new VoltTable.ColumnInfo("RULESET_NAME", VoltType.STRING),
-                new VoltTable.ColumnInfo("ISAND", VoltType.TINYINT),
+                new VoltTable.ColumnInfo("ISAND", VoltType.STRING),
                 new VoltTable.ColumnInfo("STACK_NAME", VoltType.STRING),
                 new VoltTable.ColumnInfo("SEQNO", VoltType.BIGINT),
                 new VoltTable.ColumnInfo("RULE_FIELD", VoltType.STRING),
@@ -224,9 +244,9 @@ public class RuleSet {
     }
 
     /**
-     * 
+     *
      * Add a rule to a VoltTable used for testing
-     * 
+     *
      * @param t
      * @param ruleSetName
      * @param isAnd
@@ -238,17 +258,23 @@ public class RuleSet {
      * @param thresholdString
      * @param thresholdExpression
      */
-    public static void addRule(VoltTable t, String ruleSetName, boolean isAnd, String stackName, long seqno,
+    public static void addRule(VoltTable t, String ruleSetName, String isAnd, String stackName, long seqno,
             String ruleField, String ruleOperator, Double thresholdFloat, String thresholdString,
             String thresholdExpression) {
 
-        short isAndShort = 0;
-
-        if (isAnd) {
-            isAndShort = 1;
-        }
-
-        t.addRow(ruleSetName, isAndShort, stackName, seqno, ruleField, ruleOperator, thresholdFloat, thresholdString,
+        t.addRow(ruleSetName, isAnd, stackName, seqno, ruleField, ruleOperator, thresholdFloat, thresholdString,
                 thresholdExpression);
+    }
+
+    public int getRuleCount() {
+        
+        int ruleCount = 0;
+        
+        for (int i = 0; i < theRuleStack.size(); i++) {
+            ruleCount  += theRuleStack.get(i).getRuleCount();
+          }
+
+        return ruleCount;
+        
     }
 }

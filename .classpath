@@ -9,5 +9,6 @@
 	</classpathentry>
 	<classpathentry kind="lib" path="/Users/drolfe/Desktop/InstallsOfVolt/voltdb-ent-10.2.5.beta1/voltdb/voltdb-10.2.5.beta1.jar"/>
 	<classpathentry kind="lib" path="/Users/drolfe/Desktop/InstallsOfVolt/voltdb-ent-10.2.5.beta1/voltdb/voltdbclient-10.2.5.beta1.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/5"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

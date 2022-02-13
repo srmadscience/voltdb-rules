@@ -3,7 +3,7 @@
 CREATE TABLE volt_rules
 (RULESET_NAME varchar(30) not null
 ,SEQNO bigint not null
-,ISAND tinyint not null
+,ISAND varchar(5) not null
 ,STACK_NAME varchar(80) not null
 ,RULE_FIELD varchar(80) not null
 ,RULE_OPERATOR varchar(2) not null
